@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: PlexMetadataManager
+
+management:
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    defaults:
+      enabled: true
