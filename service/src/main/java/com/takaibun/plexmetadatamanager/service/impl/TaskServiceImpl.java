@@ -1,5 +1,12 @@
 package com.takaibun.plexmetadatamanager.service.impl;
 
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -15,14 +22,6 @@ import com.takaibun.plexmetadatamanager.http.vo.TaskDetailVo;
 import com.takaibun.plexmetadatamanager.mapper.TaskMapper;
 import com.takaibun.plexmetadatamanager.service.SchedulerService;
 import com.takaibun.plexmetadatamanager.service.TaskService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * 任务管理器服务实现类
@@ -48,8 +47,8 @@ public class TaskServiceImpl implements TaskService {
         BeanUtils.copyProperties(taskCreateDto, taskEntity);
         taskEntity.setId(UUID.randomUUID().toString());
         taskEntity.setTaskStatus(TaskStatus.INITIAL);
-        taskEntity.setCreateTime(new Date());
-        taskEntity.setUpdateTime(new Date());
+        taskEntity.setCreatedAt(new Date());
+        taskEntity.setUpdatedAt(new Date());
         taskMapper.insert(taskEntity);
         schedulerService.addTask(getTaskDetailVo(taskEntity));
     }
@@ -64,7 +63,6 @@ public class TaskServiceImpl implements TaskService {
         schedulerService.deleteTask(getTaskDetailVo(taskEntity));
     }
 
-
     @Override
     public void update(TaskUpdateDto taskUpdateDto) {
         TaskEntity taskEntity = taskMapper.selectById(taskUpdateDto.getId());
@@ -72,14 +70,15 @@ public class TaskServiceImpl implements TaskService {
             throw new TaskNotFoundException();
         }
         BeanUtils.copyProperties(taskUpdateDto, taskEntity);
-        taskEntity.setUpdateTime(new Date());
+        taskEntity.setUpdatedAt(new Date());
         taskMapper.updateById(taskEntity);
         schedulerService.updateTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
     public PageInfo<TaskDetailsResp> search(TaskSearchDto taskSearchDto) {
-        try (Page<TaskDetailsResp> results = PageHelper.startPage(taskSearchDto.getPageNum(), taskSearchDto.getPageSize())){
+        try (Page<TaskDetailsResp> results =
+            PageHelper.startPage(taskSearchDto.getPageNum(), taskSearchDto.getPageSize())) {
             QueryWrapper<TaskEntity> queryWrapper = new QueryWrapper<>();
             if (taskSearchDto.getTaskId() != null) {
                 queryWrapper.eq("id", taskSearchDto.getTaskId());
@@ -108,12 +107,16 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void start(String id) {
         TaskEntity taskEntity = taskMapper.selectById(id);
+        taskEntity.setTaskStatus(TaskStatus.START);
+        taskMapper.updateById(taskEntity);
         schedulerService.startTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
     public void stop(String id) {
         TaskEntity taskEntity = taskMapper.selectById(id);
+        taskEntity.setTaskStatus(TaskStatus.STOP);
+        taskMapper.updateById(taskEntity);
         schedulerService.stopTask(getTaskDetailVo(taskEntity));
     }
 

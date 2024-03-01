@@ -1,16 +1,17 @@
 package com.takaibun.plexmetadatamanager.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * MapToJsonTypeHandler
@@ -22,7 +23,8 @@ public class MapToJsonTypeHandler extends BaseTypeHandler<Map<String, ?>> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, Map<String, ?> parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, Map<String, ?> parameter, JdbcType jdbcType)
+        throws SQLException {
         try {
             String valueJson = objectMapper.writeValueAsString(parameter);
             ps.setString(i, valueJson);

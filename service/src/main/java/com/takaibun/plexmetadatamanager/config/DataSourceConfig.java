@@ -1,13 +1,14 @@
 package com.takaibun.plexmetadatamanager.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import javax.sql.DataSource;
+
 import org.springframework.boot.autoconfigure.quartz.QuartzDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import javax.sql.DataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * DataSource配置
@@ -18,9 +19,9 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfig {
     private static final String DATABASE_FILE_PATH = "~/config";
-
     private static final String SERVICE_DB_NAME = "service";
     private static final String QUARTZ_DB_NAME = "quartz";
+    private static final String DRIVER_CLASS_NAME = "org.h2.Driver";
 
     /**
      * 数据源
@@ -32,7 +33,7 @@ public class DataSourceConfig {
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(String.format("jdbc:h2:%s/%s", DATABASE_FILE_PATH, SERVICE_DB_NAME));
-        config.setDriverClassName("org.h2.Driver");
+        config.setDriverClassName(DRIVER_CLASS_NAME);
         config.setMaximumPoolSize(10);
         config.setConnectionTimeout(30000);
         return new HikariDataSource(config);
@@ -40,10 +41,10 @@ public class DataSourceConfig {
 
     @Bean
     @QuartzDataSource
-    public DataSource QuartzDataSource() {
+    public DataSource quartzDataSource() {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(String.format("jdbc:h2:%s/%s", DATABASE_FILE_PATH, QUARTZ_DB_NAME));
-        config.setDriverClassName("org.h2.Driver");
+        config.setDriverClassName(DRIVER_CLASS_NAME);
         config.setMaximumPoolSize(10);
         config.setConnectionTimeout(30000);
         return new HikariDataSource(config);

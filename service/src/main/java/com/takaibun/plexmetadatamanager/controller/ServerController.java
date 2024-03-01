@@ -1,15 +1,15 @@
 package com.takaibun.plexmetadatamanager.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.http.req.ServerAddDto;
 import com.takaibun.plexmetadatamanager.http.req.ServerSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.ServerUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.ServerDetailsResp;
 import com.takaibun.plexmetadatamanager.http.resp.ServerHealthStatusResp;
-import com.takaibun.plexmetadatamanager.http.resp.ServerUpdateResp;
-import com.takaibun.plexmetadatamanager.service.ServerManagerService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.takaibun.plexmetadatamanager.service.ServerService;
 
 /**
  * 媒体服务器管理
@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping(value = "/server")
-public class ServerManagerController {
+public class ServerController {
 
-    private final ServerManagerService serverManagerService;
+    private final ServerService serverService;
 
-    public ServerManagerController(ServerManagerService serverManagerService) {
-        this.serverManagerService = serverManagerService;
+    public ServerController(ServerService serverService) {
+        this.serverService = serverService;
     }
 
     /**
@@ -34,7 +34,7 @@ public class ServerManagerController {
      */
     @GetMapping
     public ResponseEntity<PageInfo<ServerDetailsResp>> search(ServerSearchDto serverSearchDto) {
-        return ResponseEntity.ok(serverManagerService.search(serverSearchDto));
+        return ResponseEntity.ok(serverService.search(serverSearchDto));
     }
 
     /**
@@ -45,7 +45,7 @@ public class ServerManagerController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ServerDetailsResp> get(@PathVariable("id") String id) {
-        return ResponseEntity.ok(serverManagerService.get(id));
+        return ResponseEntity.ok(serverService.get(id));
     }
 
     /**
@@ -55,22 +55,21 @@ public class ServerManagerController {
      * @return 添加响应
      */
     @PostMapping
-    public ResponseEntity<Void> add(ServerAddDto serverAddDto) {
-        serverManagerService.add(serverAddDto);
+    public ResponseEntity<Void> add(@RequestBody ServerAddDto serverAddDto) {
+        serverService.add(serverAddDto);
         return ResponseEntity.ok().build();
     }
 
     /**
      * 更新服务器
      *
-     * @param id                   服务器ID
+     * @param id 服务器ID
      * @param serverUpdateDto 媒体服务器更新DTO
-     * @return 更新响应
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ServerUpdateResp> update(@PathVariable("id") String id, @RequestBody ServerUpdateDto serverUpdateDto) {
-        serverUpdateDto.setMediaServerId(id);
-        serverManagerService.update(serverUpdateDto);
+    public ResponseEntity<Void> update(@PathVariable("id") String id, @RequestBody ServerUpdateDto serverUpdateDto) {
+        serverUpdateDto.setId(id);
+        serverService.update(serverUpdateDto);
         return ResponseEntity.ok().build();
     }
 
@@ -78,11 +77,10 @@ public class ServerManagerController {
      * 删除服务器
      *
      * @param id 服务器ID
-     * @return 删除响应
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") String id) {
-        serverManagerService.delete(id);
+        serverService.delete(id);
         return ResponseEntity.ok().build();
     }
 
@@ -94,6 +92,6 @@ public class ServerManagerController {
      */
     @GetMapping("/{id}/health")
     public ResponseEntity<ServerHealthStatusResp> health(@PathVariable("id") String id) {
-        return ResponseEntity.ok(serverManagerService.health(id));
+        return ResponseEntity.ok(serverService.health(id));
     }
 }

@@ -1,14 +1,14 @@
 package com.takaibun.plexmetadatamanager.http.req;
 
-import com.takaibun.plexmetadatamanager.enums.SchedulerType;
-import com.takaibun.plexmetadatamanager.enums.TaskStatus;
-import com.takaibun.plexmetadatamanager.enums.TaskType;
-import lombok.Data;
-
 import java.util.Map;
 
+import com.takaibun.plexmetadatamanager.enums.SchedulerType;
+import com.takaibun.plexmetadatamanager.enums.TaskType;
+
+import lombok.Data;
+
 /**
- * 任务创建DTO
+ * 任务创建请求体
  *
  * @author takaibun
  * @since 2024/03/02

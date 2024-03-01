@@ -6,8 +6,8 @@ package com.takaibun.plexmetadatamanager.exception;
  * @author takaibun
  * @since 2024/02/24
  */
-public class MediaServerNotFoundException extends RuntimeException {
-    public MediaServerNotFoundException() {
+public class ServerNotFoundException extends RuntimeException {
+    public ServerNotFoundException() {
         super("media server not found");
     }
 }

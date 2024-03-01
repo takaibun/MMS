@@ -1,5 +1,8 @@
 package com.takaibun.plexmetadatamanager.entity;
 
+import java.util.Date;
+import java.util.Map;
+
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.takaibun.plexmetadatamanager.enums.SchedulerType;
@@ -7,10 +10,8 @@ import com.takaibun.plexmetadatamanager.enums.TaskStatus;
 import com.takaibun.plexmetadatamanager.enums.TaskType;
 import com.takaibun.plexmetadatamanager.handler.EnumTypeHandler;
 import com.takaibun.plexmetadatamanager.handler.MapToJsonTypeHandler;
-import lombok.Data;
 
-import java.util.Date;
-import java.util.Map;
+import lombok.Data;
 
 /**
  * 任务实体
@@ -39,7 +40,7 @@ public class TaskEntity {
     @TableField(typeHandler = MapToJsonTypeHandler.class)
     private Map<String, Object> taskParams;
 
-    private Date createTime;
+    private Date createdAt;
 
-    private Date updateTime;
+    private Date updatedAt;
 }

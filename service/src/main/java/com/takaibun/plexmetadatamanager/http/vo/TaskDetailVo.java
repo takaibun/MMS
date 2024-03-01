@@ -1,11 +1,12 @@
 package com.takaibun.plexmetadatamanager.http.vo;
 
+import java.util.Map;
+
 import com.takaibun.plexmetadatamanager.enums.SchedulerType;
 import com.takaibun.plexmetadatamanager.enums.TaskStatus;
 import com.takaibun.plexmetadatamanager.enums.TaskType;
-import lombok.Data;
 
-import java.util.Map;
+import lombok.Data;
 
 /**
  * 任务详情vo

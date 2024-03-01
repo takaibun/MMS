@@ -1,16 +1,19 @@
 package com.takaibun.plexmetadatamanager.quartz.service;
 
-import com.takaibun.plexmetadatamanager.enums.SchedulerType;
-import com.takaibun.plexmetadatamanager.http.vo.TaskDetailVo;
-import com.takaibun.plexmetadatamanager.quartz.enums.QuartzJobType;
-import com.takaibun.plexmetadatamanager.quartz.exception.QuartzSchedulerException;
-import com.takaibun.plexmetadatamanager.service.SchedulerService;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
+
 import org.quartz.*;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import com.takaibun.plexmetadatamanager.enums.SchedulerType;
+import com.takaibun.plexmetadatamanager.enums.TaskStatus;
+import com.takaibun.plexmetadatamanager.http.vo.TaskDetailVo;
+import com.takaibun.plexmetadatamanager.quartz.enums.QuartzJobType;
+import com.takaibun.plexmetadatamanager.quartz.exception.QuartzSchedulerException;
+import com.takaibun.plexmetadatamanager.service.SchedulerService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -20,7 +23,6 @@ public class QuartzSchedulerService implements SchedulerService {
     public QuartzSchedulerService(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
-
 
     @Override
     public void addTask(TaskDetailVo taskDetail) {
@@ -42,19 +44,18 @@ public class QuartzSchedulerService implements SchedulerService {
         }
     }
 
-
     @Override
     public void updateTask(TaskDetailVo taskDetail) {
         try {
             JobKey jobKey = getJobKey(taskDetail);
             verifyJobExists(jobKey);
-            JobDetail jobDetail = buildJobDetail(taskDetail);
-            scheduler.addJob(jobDetail, true);
-            TriggerKey triggerKey = getTriggerKey(taskDetail);
-            if (scheduler.checkExists(triggerKey)) {
-                Trigger trigger = buildTrigger(taskDetail);
-                scheduler.unscheduleJob(triggerKey);
-                scheduler.scheduleJob(trigger);
+            scheduler.addJob(buildJobDetail(taskDetail), true);
+            if (taskDetail.getTaskStatus() == TaskStatus.START) {
+                TriggerKey triggerKey = getTriggerKey(taskDetail);
+                if (scheduler.checkExists(triggerKey)) {
+                    scheduler.unscheduleJob(triggerKey);
+                }
+                scheduler.scheduleJob(buildTrigger(taskDetail));
             }
         } catch (SchedulerException e) {
             throw new QuartzSchedulerException(e.getLocalizedMessage());
@@ -69,7 +70,6 @@ public class QuartzSchedulerService implements SchedulerService {
             throw new QuartzSchedulerException(e.getLocalizedMessage());
         }
     }
-
 
     @Override
     public void stopTask(TaskDetailVo taskDetail) {
@@ -129,14 +129,17 @@ public class QuartzSchedulerService implements SchedulerService {
 
     private Trigger buildTrigger(TaskDetailVo taskDetail) {
         TriggerKey triggerKey = getTriggerKey(taskDetail);
-        TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger().forJob(getJobKey(taskDetail)).withIdentity(triggerKey).withDescription(taskDetail.getDescription());
+        TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger().forJob(getJobKey(taskDetail))
+            .withIdentity(triggerKey).withDescription(taskDetail.getDescription());
         Map<String, Object> taskParams = taskDetail.getTaskParams();
         SchedulerType schedulerType = taskDetail.getSchedulerType();
         return switch (schedulerType) {
-            case CRON ->
-                    triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(taskParams.get("cron_expression").toString())).build();
-            case INTERVAL ->
-                    triggerBuilder.withSchedule(DailyTimeIntervalScheduleBuilder.dailyTimeIntervalSchedule().withInterval(Integer.parseInt(taskParams.get("interval").toString()), DateBuilder.IntervalUnit.MILLISECOND)).build();
+            case CRON -> triggerBuilder
+                .withSchedule(CronScheduleBuilder.cronSchedule(taskParams.get("cron_expression").toString())).build();
+            case INTERVAL -> triggerBuilder
+                .withSchedule(DailyTimeIntervalScheduleBuilder.dailyTimeIntervalSchedule().withInterval(
+                    Integer.parseInt(taskParams.get("interval").toString()), DateBuilder.IntervalUnit.MILLISECOND))
+                .build();
             default -> triggerBuilder.build();
         };
     }
@@ -147,7 +150,8 @@ public class QuartzSchedulerService implements SchedulerService {
         if (null == jobClass) {
             throw new QuartzSchedulerException("task type is not support");
         }
-        JobDetail jobDetail = JobBuilder.newJob().ofType(jobClass).withIdentity(jobKey).withDescription(taskDetail.getDescription()).storeDurably().build();
+        JobDetail jobDetail = JobBuilder.newJob().ofType(jobClass).withIdentity(jobKey)
+            .withDescription(taskDetail.getDescription()).storeDurably().build();
         jobDetail.getJobDataMap().putAll(taskDetail.getTaskParams());
         return jobDetail;
     }

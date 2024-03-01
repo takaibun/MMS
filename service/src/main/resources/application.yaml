@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: PlexMetadataManager
+    name: MMS
   quartz:
     job-store-type: jdbc
     jdbc:

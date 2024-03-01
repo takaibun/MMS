@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 任务搜索
+ * 任务搜索请求体
  *
  * @author takaibun
  * @since 2024/02/24

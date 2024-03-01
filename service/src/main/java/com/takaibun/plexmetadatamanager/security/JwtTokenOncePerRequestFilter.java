@@ -1,19 +1,26 @@
 package com.takaibun.plexmetadatamanager.security;
 
-import com.takaibun.plexmetadatamanager.service.UserService;
-import com.takaibun.plexmetadatamanager.service.impl.JwtTokenAuthentication;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import java.io.IOException;
+import java.util.Optional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Optional;
+import com.takaibun.plexmetadatamanager.service.UserService;
+import com.takaibun.plexmetadatamanager.service.impl.JwtTokenAuthentication;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Jwt认证拦截器
+ *
+ * @author takaibun
+ * @since 2024/03/02
+ */
 public class JwtTokenOncePerRequestFilter extends OncePerRequestFilter {
     private final UserService userService;
 
@@ -22,12 +29,13 @@ public class JwtTokenOncePerRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
         try {
             Optional<String> tokenOpt = getTokenByRequest(request);
             if (tokenOpt.isPresent() && userService.validateToken(tokenOpt.get())) {
 
-                Authentication auth =  new JwtTokenAuthentication(null);
+                Authentication auth = new JwtTokenAuthentication(null);
 
                 if (auth != null) {
                     SecurityContextHolder.getContext().setAuthentication(auth);

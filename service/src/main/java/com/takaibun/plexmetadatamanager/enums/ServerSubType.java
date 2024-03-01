@@ -3,22 +3,27 @@ package com.takaibun.plexmetadatamanager.enums;
 import lombok.Getter;
 
 /**
- * 任务类型
+ * ServerType
  *
  * @author takaibun
- * @since 2024/03/02
+ * @since 2024/3/2
  */
 @Getter
-public enum TaskType implements BaseEnum {
+public enum ServerSubType implements BaseEnum {
     /**
-     * 媒体服务健康检查
+     * 未知
      */
-    SERVER_HEALTH_CHECK(0, "ServerHealthCheck");
+    UNKNOWN(0, "unknown"),
+    /**
+     * Plex
+     */
+    PLEX(1, "plex");
 
     private final int code;
+
     private final String name;
 
-    TaskType(int code, String name) {
+    ServerSubType(int code, String name) {
         this.code = code;
         this.name = name;
     }

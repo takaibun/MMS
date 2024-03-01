@@ -1,20 +1,31 @@
 package com.takaibun.plexmetadatamanager.http.req;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.takaibun.plexmetadatamanager.enums.ServerSubType;
+import com.takaibun.plexmetadatamanager.enums.ServerType;
+
 import lombok.Data;
 
 /**
- * 媒体服务器更新
+ * 服务更新请求体
  *
  * @author takaibun
  * @since 2024/02/24
  */
 @Data
 public class ServerUpdateDto {
-    private String mediaServerId;
+    @JsonIgnore
+    private String id;
 
-    private String mediaServerName;
+    private String name;
 
-    private String mediaServerHost;
+    private String host;
 
-    private String mediaServerToken;
+    private String token;
+
+    private String description;
+
+    private ServerType type;
+
+    private ServerSubType subType;
 }

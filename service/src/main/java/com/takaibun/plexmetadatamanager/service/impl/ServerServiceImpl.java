@@ -1,28 +1,29 @@
 package com.takaibun.plexmetadatamanager.service.impl;
 
+import java.util.UUID;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.entity.ServerEntity;
-import com.takaibun.plexmetadatamanager.exception.MediaServerNotFoundException;
+import com.takaibun.plexmetadatamanager.exception.ServerNotFoundException;
 import com.takaibun.plexmetadatamanager.http.req.ServerAddDto;
 import com.takaibun.plexmetadatamanager.http.req.ServerSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.ServerUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.ServerDetailsResp;
 import com.takaibun.plexmetadatamanager.http.resp.ServerHealthStatusResp;
 import com.takaibun.plexmetadatamanager.mapper.ServerMapper;
-import com.takaibun.plexmetadatamanager.service.ServerManagerService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-
-import java.util.UUID;
+import com.takaibun.plexmetadatamanager.service.ServerService;
 
 /**
  * @author takaibun
  */
 @Service
-public class ServerServiceImpl implements ServerManagerService {
+public class ServerServiceImpl implements ServerService {
     private final ServerMapper serverMapper;
 
     public ServerServiceImpl(ServerMapper serverMapper) {
@@ -41,17 +42,16 @@ public class ServerServiceImpl implements ServerManagerService {
     public ServerHealthStatusResp health(String id) {
         ServerEntity serverEntity = serverMapper.selectById(id);
         if (serverEntity == null) {
-            throw new MediaServerNotFoundException();
+            throw new ServerNotFoundException();
         }
-
         return new ServerHealthStatusResp();
     }
 
     @Override
     public void update(ServerUpdateDto serverUpdateDto) {
-        ServerEntity serverEntity = serverMapper.selectById(serverUpdateDto.getMediaServerId());
+        ServerEntity serverEntity = serverMapper.selectById(serverUpdateDto.getId());
         if (serverEntity == null) {
-            throw new MediaServerNotFoundException();
+            throw new ServerNotFoundException();
         }
         BeanUtils.copyProperties(serverUpdateDto, serverEntity);
         serverMapper.updateById(serverEntity);
@@ -64,20 +64,12 @@ public class ServerServiceImpl implements ServerManagerService {
 
     @Override
     public PageInfo<ServerDetailsResp> search(ServerSearchDto serverSearchDto) {
-        try (Page<ServerDetailsResp> result = PageHelper.startPage(serverSearchDto.getPageNum(), serverSearchDto.getPageSize()).doSelectPage(() -> serverMapper.selectList(queryWrapper), result)) {
-            QueryWrapper<ServerEntity> queryWrapper = new QueryWrapper<>();
-            if (serverSearchDto.getMediaServerId() != null) {
-                queryWrapper.eq("id", serverSearchDto.getMediaServerId());
-            }
-            if (serverSearchDto.getMediaServerName() != null) {
-                queryWrapper.like("name", serverSearchDto.getMediaServerName());
-            }
-            if (serverSearchDto.getMediaServerHost() != null) {
-                queryWrapper.like("host", serverSearchDto.getMediaServerHost());
-            }
-            serverMapper.selectList(queryWrapper, mediaServerEntity -> {
+        try (Page<ServerDetailsResp> result =
+            PageHelper.startPage(serverSearchDto.getPageNum(), serverSearchDto.getPageSize())) {
+            QueryWrapper<ServerEntity> queryWrapper = buildSearchQuaryWrapper(serverSearchDto);
+            serverMapper.selectList(queryWrapper, resultContext -> {
                 ServerDetailsResp serverDetailsResp = new ServerDetailsResp();
-                BeanUtils.copyProperties(mediaServerEntity, serverDetailsResp);
+                BeanUtils.copyProperties(resultContext.getResultObject(), serverDetailsResp);
                 result.add(serverDetailsResp);
             });
             return new PageInfo<>(result);
@@ -89,10 +81,24 @@ public class ServerServiceImpl implements ServerManagerService {
     public ServerDetailsResp get(String id) {
         ServerEntity serverEntity = serverMapper.selectById(id);
         if (serverEntity == null) {
-            throw new MediaServerNotFoundException();
+            throw new ServerNotFoundException();
         }
         ServerDetailsResp serverDetailsResp = new ServerDetailsResp();
         BeanUtils.copyProperties(serverEntity, serverDetailsResp);
         return serverDetailsResp;
+    }
+
+    private QueryWrapper<ServerEntity> buildSearchQuaryWrapper(ServerSearchDto serverSearchDto) {
+        QueryWrapper<ServerEntity> queryWrapper = new QueryWrapper<>();
+        if (serverSearchDto.getId() != null) {
+            queryWrapper.eq("id", serverSearchDto.getId());
+        }
+        if (serverSearchDto.getName() != null) {
+            queryWrapper.like("name", serverSearchDto.getName());
+        }
+        if (serverSearchDto.getHost() != null) {
+            queryWrapper.like("host", serverSearchDto.getHost());
+        }
+        return queryWrapper;
     }
 }

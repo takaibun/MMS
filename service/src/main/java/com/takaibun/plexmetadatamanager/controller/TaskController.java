@@ -1,18 +1,14 @@
 package com.takaibun.plexmetadatamanager.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.http.req.TaskCreateDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.TaskDetailsResp;
 import com.takaibun.plexmetadatamanager.service.TaskService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 任务管理
@@ -24,7 +20,6 @@ import java.util.List;
 @RequestMapping(value = "/task")
 public class TaskController {
     private final TaskService taskService;
-
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
@@ -63,7 +58,6 @@ public class TaskController {
         return ResponseEntity.ok().build();
     }
 
-
     /**
      * 删除任务
      *
@@ -79,12 +73,13 @@ public class TaskController {
     /**
      * 更新任务
      *
-     * @param id            任务id
+     * @param id 任务id
      * @param taskUpdateDto 任务更新Dto
      * @return 更新响应
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable(value = "id") String id, @RequestBody TaskUpdateDto taskUpdateDto) {
+    public ResponseEntity<Void> update(@PathVariable(value = "id") String id,
+        @RequestBody TaskUpdateDto taskUpdateDto) {
         taskUpdateDto.setId(id);
         taskService.update(taskUpdateDto);
         return ResponseEntity.ok().build();

@@ -7,7 +7,13 @@ import com.takaibun.plexmetadatamanager.http.req.ServerUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.ServerDetailsResp;
 import com.takaibun.plexmetadatamanager.http.resp.ServerHealthStatusResp;
 
-public interface ServerManagerService {
+/**
+ * 服务管理服务
+ *
+ * @author takaibun
+ * @since 2024/03/02
+ */
+public interface ServerService {
     /**
      * 添加服务器
      *

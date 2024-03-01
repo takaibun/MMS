@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author takaibun
  */
 @SpringBootApplication
-public class PlexMetadataManagerApplication {
+public class MMSApplication {
 
     /**
      * Main method to start the application.
@@ -15,7 +15,7 @@ public class PlexMetadataManagerApplication {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        SpringApplication.run(PlexMetadataManagerApplication.class, args);
+        SpringApplication.run(MMSApplication.class, args);
     }
 
 }

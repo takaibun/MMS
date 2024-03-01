@@ -1,5 +1,8 @@
 package com.takaibun.plexmetadatamanager.http.req;
 
+import com.takaibun.plexmetadatamanager.enums.ServerSubType;
+import com.takaibun.plexmetadatamanager.enums.ServerType;
+
 import lombok.Data;
 
 /**
@@ -10,7 +13,10 @@ import lombok.Data;
  */
 @Data
 public class ServerAddDto {
-    private String mediaServerName;
-    private String mediaServerHost;
-    private String mediaServerToken;
+    private String name;
+    private String host;
+    private String token;
+    private String description;
+    private ServerType type;
+    private ServerSubType subType;
 }
