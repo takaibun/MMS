@@ -14,7 +14,7 @@ import java.util.Collection;
  * @since 2024/02/24
  */
 @Data
-@TableName("msm_users")
+@TableName("t_msm_user")
 public class UserEntity implements UserDetails {
     private String username;
 

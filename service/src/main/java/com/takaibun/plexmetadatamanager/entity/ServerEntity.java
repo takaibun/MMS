@@ -10,8 +10,8 @@ import lombok.Data;
  * @since 2024/02/24
  */
 @Data
-@TableName("msm_media_server_detail")
-public class MediaServerEntity {
+@TableName("t_msm_server_detail")
+public class ServerEntity {
     private String id;
 
     private String name;

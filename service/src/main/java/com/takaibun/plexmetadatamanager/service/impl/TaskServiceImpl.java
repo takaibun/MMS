@@ -1,7 +1,11 @@
 package com.takaibun.plexmetadatamanager.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.entity.TaskEntity;
+import com.takaibun.plexmetadatamanager.enums.TaskStatus;
 import com.takaibun.plexmetadatamanager.exception.TaskNotFoundException;
 import com.takaibun.plexmetadatamanager.http.req.TaskCreateDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskSearchDto;
@@ -15,6 +19,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +47,9 @@ public class TaskServiceImpl implements TaskService {
         TaskEntity taskEntity = new TaskEntity();
         BeanUtils.copyProperties(taskCreateDto, taskEntity);
         taskEntity.setId(UUID.randomUUID().toString());
+        taskEntity.setTaskStatus(TaskStatus.INITIAL);
+        taskEntity.setCreateTime(new Date());
+        taskEntity.setUpdateTime(new Date());
         taskMapper.insert(taskEntity);
         schedulerService.addTask(getTaskDetailVo(taskEntity));
     }
@@ -58,22 +67,31 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void update(TaskUpdateDto taskUpdateDto) {
-        TaskEntity taskEntity = taskMapper.selectById(taskUpdateDto.getTaskId());
+        TaskEntity taskEntity = taskMapper.selectById(taskUpdateDto.getId());
         if (taskEntity == null) {
             throw new TaskNotFoundException();
         }
         BeanUtils.copyProperties(taskUpdateDto, taskEntity);
+        taskEntity.setUpdateTime(new Date());
         taskMapper.updateById(taskEntity);
         schedulerService.updateTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
-    public List<TaskDetailsResp> search(TaskSearchDto taskSearchDto) {
-        QueryWrapper<TaskEntity> queryWrapper = new QueryWrapper<>();
-        if (taskSearchDto.getTaskId() != null) {
-            queryWrapper.eq("id", taskSearchDto.getTaskId());
+    public PageInfo<TaskDetailsResp> search(TaskSearchDto taskSearchDto) {
+        try (Page<TaskDetailsResp> results = PageHelper.startPage(taskSearchDto.getPageNum(), taskSearchDto.getPageSize())){
+            QueryWrapper<TaskEntity> queryWrapper = new QueryWrapper<>();
+            if (taskSearchDto.getTaskId() != null) {
+                queryWrapper.eq("id", taskSearchDto.getTaskId());
+            }
+            taskMapper.selectList(queryWrapper, resultContext -> {
+                TaskDetailsResp taskDetailsResp = new TaskDetailsResp();
+                BeanUtils.copyProperties(resultContext.getResultObject(), taskDetailsResp);
+                results.add(taskDetailsResp);
+            });
+            return new PageInfo<>(results);
         }
-        return taskMapper.selectObjs(queryWrapper);
+
     }
 
     @Override
@@ -97,6 +115,12 @@ public class TaskServiceImpl implements TaskService {
     public void stop(String id) {
         TaskEntity taskEntity = taskMapper.selectById(id);
         schedulerService.stopTask(getTaskDetailVo(taskEntity));
+    }
+
+    @Override
+    public void trigger(String id) {
+        TaskEntity taskEntity = taskMapper.selectById(id);
+        schedulerService.triggerTask(getTaskDetailVo(taskEntity));
     }
 
     private TaskDetailVo getTaskDetailVo(TaskEntity taskEntity) {

@@ -1,6 +1,9 @@
 package com.takaibun.plexmetadatamanager.controller;
 
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.http.req.TaskCreateDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskUpdateDto;
@@ -13,6 +16,7 @@ import java.util.List;
 
 /**
  * 任务管理
+ *
  * @author takaibun
  * @since 2024/02/23
  */
@@ -25,13 +29,14 @@ public class TaskController {
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
+
     /**
      * 获取所有任务
      *
      * @return 所有任务响应
      */
     @GetMapping
-    public ResponseEntity<List<TaskDetailsResp>> search(TaskSearchDto taskSearchDto) {
+    public ResponseEntity<PageInfo<TaskDetailsResp>> search(@RequestBody TaskSearchDto taskSearchDto) {
         return ResponseEntity.ok(taskService.search(taskSearchDto));
     }
 
@@ -80,13 +85,14 @@ public class TaskController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable(value = "id") String id, @RequestBody TaskUpdateDto taskUpdateDto) {
-        taskUpdateDto.setTaskId(id);
+        taskUpdateDto.setId(id);
         taskService.update(taskUpdateDto);
         return ResponseEntity.ok().build();
     }
 
     /**
      * 启动任务
+     *
      * @param id 任务id
      * @return 启动响应
      */
@@ -98,12 +104,25 @@ public class TaskController {
 
     /**
      * 停止任务
+     *
      * @param id 任务id
      * @return 停止响应
      */
     @PostMapping("/{id}/stop")
     public ResponseEntity<Void> stop(@PathVariable(value = "id") String id) {
         taskService.stop(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 执行任务
+     *
+     * @param id 任务id
+     * @return 执行响应
+     */
+    @PostMapping("/{id}/execute")
+    public ResponseEntity<Void> execute(@PathVariable(value = "id") String id) {
+        taskService.trigger(id);
         return ResponseEntity.ok().build();
     }
 }

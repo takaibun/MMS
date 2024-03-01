@@ -1,7 +1,7 @@
 package com.takaibun.plexmetadatamanager.quartz.enums;
 
-import com.takaibun.plexmetadatamanager.http.vo.TaskDetailVo;
-import com.takaibun.plexmetadatamanager.quartz.job.MediaServerHealthJob;
+import com.takaibun.plexmetadatamanager.enums.TaskType;
+import com.takaibun.plexmetadatamanager.quartz.job.ServerHealthCheckJob;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
@@ -15,7 +15,7 @@ public enum QuartzJobType {
     /**
      * 媒体服务器健康检查
      */
-    MEDIA_SERVER_HEALTH("MediaServerHealthJob", MediaServerHealthJob.class),
+    SERVER_HEALTH_CHECK("ServerHealthCheckJob", ServerHealthCheckJob.class),
     ;
 
     private final String jobName;
@@ -29,9 +29,9 @@ public enum QuartzJobType {
     /**
      * 根据TaskDetailVo.TaskType获取QuartzJobType
      */
-    public static QuartzJobType getJobType(TaskDetailVo.TaskType taskType) {
+    public static QuartzJobType getJobType(TaskType taskType) {
         for (QuartzJobType quartzJobType : QuartzJobType.values()) {
-            if (quartzJobType.getJobName().equals(taskType.getName())) {
+            if (quartzJobType.getJobName().startsWith(taskType.getName())) {
                 return quartzJobType;
             }
         }

@@ -1,11 +1,12 @@
 package com.takaibun.plexmetadatamanager.http.req;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class MediaServerSearchDto {
+@EqualsAndHashCode(callSuper = true)
+public class ServerSearchDto extends PageBase {
     private String mediaServerId;
     private String mediaServerName;
-
     private String mediaServerHost;
 }

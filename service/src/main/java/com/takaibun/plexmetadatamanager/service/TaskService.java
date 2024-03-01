@@ -1,5 +1,7 @@
 package com.takaibun.plexmetadatamanager.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.takaibun.plexmetadatamanager.http.req.TaskCreateDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskUpdateDto;
@@ -38,7 +40,7 @@ public interface TaskService {
      *
      * @return 任务列表
      */
-    List<TaskDetailsResp> search(TaskSearchDto taskSearchDto);
+    PageInfo<TaskDetailsResp> search(TaskSearchDto taskSearchDto);
 
     /**
      * 获取任务详情
@@ -61,4 +63,10 @@ public interface TaskService {
      * @param id 任务ID
      */
     void stop(String id);
+
+    /**
+     * 触发任务
+     * @param id 任务ID
+     */
+    void trigger(String id);
 }

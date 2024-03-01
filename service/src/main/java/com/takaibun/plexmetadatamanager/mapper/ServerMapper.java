@@ -1,7 +1,7 @@
 package com.takaibun.plexmetadatamanager.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.takaibun.plexmetadatamanager.entity.MediaServerEntity;
+import com.takaibun.plexmetadatamanager.entity.ServerEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,5 +11,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 2024/02/24
  */
 @Mapper
-public interface MediaServerMapper extends BaseMapper<MediaServerEntity> {
+public interface ServerMapper extends BaseMapper<ServerEntity> {
 }

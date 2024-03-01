@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 2024/02/23
  */
 @Data
-public class MediaServerAddDto {
+public class ServerAddDto {
     private String mediaServerName;
     private String mediaServerHost;
     private String mediaServerToken;

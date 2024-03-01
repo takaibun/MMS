@@ -48,11 +48,22 @@ public interface SchedulerService {
 
     /**
      * 暂停任务
+     *
+     * @param taskDetail 任务详情
      */
     void pauseTask(TaskDetailVo taskDetail);
 
     /**
      * 恢复任务
+     *
+     * @param taskDetail 任务详情
      */
     void resumeTask(TaskDetailVo taskDetail);
+
+    /**
+     * 触发任务
+     *
+     * @param taskDetail 任务详情
+     */
+    void triggerTask(TaskDetailVo taskDetail);
 }
