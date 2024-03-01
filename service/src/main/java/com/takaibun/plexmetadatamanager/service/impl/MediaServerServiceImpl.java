@@ -20,10 +20,10 @@ import java.util.UUID;
  * @author takaibun
  */
 @Service
-public class MediaServerManagerServiceImpl implements MediaServerManagerService {
+public class MediaServerServiceImpl implements MediaServerManagerService {
     private final MediaServerMapper mediaServerMapper;
 
-    public MediaServerManagerServiceImpl(MediaServerMapper mediaServerMapper) {
+    public MediaServerServiceImpl(MediaServerMapper mediaServerMapper) {
         this.mediaServerMapper = mediaServerMapper;
     }
 

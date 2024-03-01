@@ -3,6 +3,7 @@ package com.takaibun.plexmetadatamanager.service;
 import com.takaibun.plexmetadatamanager.http.req.UserLoginDto;
 import com.takaibun.plexmetadatamanager.http.req.UserUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.UserLoginResp;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
  * 用户服务
@@ -10,7 +11,7 @@ import com.takaibun.plexmetadatamanager.http.resp.UserLoginResp;
  * @author takaibun
  * @since 2024/02/24
  */
-public interface UserService {
+public interface UserService extends UserDetailsService {
     /**
      * 登录
      *
@@ -35,13 +36,15 @@ public interface UserService {
      * 验证token
      *
      * @param token token
+     * @return
      */
-    void validateToken(String token);
+    boolean validateToken(String token);
 
     /**
      * 刷新token
      *
-     * @return token
+     * @param token token
+     * @return new token
      */
-    UserLoginResp refreshToken();
+    String refresh(String token);
 }

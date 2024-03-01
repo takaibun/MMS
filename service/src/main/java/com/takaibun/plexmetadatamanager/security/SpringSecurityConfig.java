@@ -1,19 +1,24 @@
 package com.takaibun.plexmetadatamanager.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.takaibun.plexmetadatamanager.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * @author takaibun
- */
 @Configuration
+@EnableWebSecurity
 public class SpringSecurityConfig {
 
     @Bean
@@ -21,34 +26,42 @@ public class SpringSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * 配置安全过滤器链
-     *
-     * @param http 安全过滤器
-     * @return 安全过滤器链
-     * @throws Exception 异常
-     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // 配置请求授权规则
-        http.authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/login", "/signup", "/actuator/**").permitAll()
-                .anyRequest().authenticated()
-        );
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, AuthenticationProvider authenticationProvider, OncePerRequestFilter oncePerRequestFilter) throws Exception {
+        httpSecurity.authorizeHttpRequests((request) -> request.anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .csrf(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())
+                .logout(Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers("/login").permitAll()
+                        .requestMatchers("/logout").permitAll()
+                        .requestMatchers("/actu/**").permitAll()
+                        .anyRequest().authenticated())
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(oncePerRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        return httpSecurity.build();
+    }
 
-        // 配置登录和注销功能
-        http.formLogin((form) -> form
-                .loginPage("/login")
-                .permitAll()
-                .defaultSuccessUrl("/")
-        ).logout((logout) -> logout.logoutSuccessUrl("/login")
-        );
 
-        // 配置跨域资源共享（CORS）支持
-        http.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configure(http));
+    @Bean
+    public OncePerRequestFilter oncePerRequestFilter(UserService userService) {
+        return new JwtTokenOncePerRequestFilter(userService);
+    }
 
-        // 其他可能的配置包括：CSRF、JWT、OAuth2等
+    @Bean
+    public AuthenticationProvider authenticationProvider(UserService userService) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        // DaoAuthenticationProvider 从自定义的 userDetailsService.loadUserByUsername 方法获取UserDetails
+        authProvider.setUserDetailsService(userService);
+        // 设置密码编辑器
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
 
-        return http.build();
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }

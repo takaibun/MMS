@@ -7,10 +7,13 @@ import com.takaibun.plexmetadatamanager.http.req.TaskCreateDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskSearchDto;
 import com.takaibun.plexmetadatamanager.http.req.TaskUpdateDto;
 import com.takaibun.plexmetadatamanager.http.resp.TaskDetailsResp;
+import com.takaibun.plexmetadatamanager.http.vo.TaskDetailVo;
 import com.takaibun.plexmetadatamanager.mapper.TaskMapper;
+import com.takaibun.plexmetadatamanager.service.SchedulerService;
 import com.takaibun.plexmetadatamanager.service.TaskService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,11 +25,15 @@ import java.util.UUID;
  * @since 2024/02/24
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class TaskServiceImpl implements TaskService {
     private final TaskMapper taskMapper;
 
-    public TaskServiceImpl(TaskMapper taskMapper) {
+    private final SchedulerService schedulerService;
+
+    public TaskServiceImpl(TaskMapper taskMapper, SchedulerService schedulerService) {
         this.taskMapper = taskMapper;
+        this.schedulerService = schedulerService;
     }
 
     @Override
@@ -35,6 +42,7 @@ public class TaskServiceImpl implements TaskService {
         BeanUtils.copyProperties(taskCreateDto, taskEntity);
         taskEntity.setId(UUID.randomUUID().toString());
         taskMapper.insert(taskEntity);
+        schedulerService.addTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
@@ -44,7 +52,9 @@ public class TaskServiceImpl implements TaskService {
             throw new TaskNotFoundException();
         }
         taskMapper.deleteById(id);
+        schedulerService.deleteTask(getTaskDetailVo(taskEntity));
     }
+
 
     @Override
     public void update(TaskUpdateDto taskUpdateDto) {
@@ -54,6 +64,7 @@ public class TaskServiceImpl implements TaskService {
         }
         BeanUtils.copyProperties(taskUpdateDto, taskEntity);
         taskMapper.updateById(taskEntity);
+        schedulerService.updateTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
@@ -78,11 +89,19 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void start(String id) {
-
+        TaskEntity taskEntity = taskMapper.selectById(id);
+        schedulerService.startTask(getTaskDetailVo(taskEntity));
     }
 
     @Override
     public void stop(String id) {
+        TaskEntity taskEntity = taskMapper.selectById(id);
+        schedulerService.stopTask(getTaskDetailVo(taskEntity));
+    }
 
+    private TaskDetailVo getTaskDetailVo(TaskEntity taskEntity) {
+        TaskDetailVo taskDetail = new TaskDetailVo();
+        BeanUtils.copyProperties(taskEntity, taskDetail);
+        return taskDetail;
     }
 }

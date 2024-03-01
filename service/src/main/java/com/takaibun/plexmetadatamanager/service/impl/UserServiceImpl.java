@@ -2,7 +2,6 @@ package com.takaibun.plexmetadatamanager.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.takaibun.plexmetadatamanager.entity.UserEntity;
-import com.takaibun.plexmetadatamanager.exception.UserNotLoginException;
 import com.takaibun.plexmetadatamanager.exception.UsernameOrPasswordIncorrectException;
 import com.takaibun.plexmetadatamanager.http.req.UserLoginDto;
 import com.takaibun.plexmetadatamanager.http.req.UserUpdateDto;
@@ -14,10 +13,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 用户服务实现类
@@ -55,6 +59,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        QueryWrapper<UserEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        UserEntity userEntity = userMapper.selectOne(queryWrapper);
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("user is not exists");
+        }
+        return userEntity;
+    }
+
+    @Override
     public UserLoginResp login(UserLoginDto userLoginDto) {
         String username = userLoginDto.getUsername();
         QueryWrapper<UserEntity> queryWrapper = new QueryWrapper<>();
@@ -76,67 +91,47 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(UserUpdateDto userUpdateDto) {
         UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userUpdateDto,userEntity);
+        BeanUtils.copyProperties(userUpdateDto, userEntity);
         userMapper.update(userEntity, new QueryWrapper<>());
         logout();
     }
 
 
     @Override
-    public void validateToken(String token) {
-        if (token == null || isTokenExpired(token)) {
-            throw new UserNotLoginException();
-        }
+    public boolean validateToken(String token) {
+        return token != null && !isTokenExpired(token);
+    }
+
+    @Override
+    public String refresh(String token) {
+        String username = getPayloadFromToken(token).getSubject();
+        return buildTokenByUsername(username);
     }
 
 
     public String buildTokenByUsername(String username) {
-        return generatorToken(buildClaims(username));
-    }
-
-    private Map<String, Object> buildClaims(String username) {
-        return new HashMap<>(6) {{
+        Map<String, Object> claims = new HashMap<>(6) {{
             put("iss", "msm");
             put("sub", username);
-            put("exp", generatorExpirationDate());
+            put("exp", new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_MILLISION));
             put("aud", "internal use");
             put("iat", new Date());
             put("jti", UUID.randomUUID().toString());
         }};
+        return generatorToken(claims);
     }
-
 
     private String generatorToken(Map<String, Object> claims) {
         return Jwts.builder().claims(claims).signWith(secret, Jwts.SIG.HS256).compact();
     }
 
-    private Date generatorExpirationDate() {
-        return new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_MILLISION);
-    }
-
-
     private Claims getPayloadFromToken(String token) {
         return Jwts.parser().verifyWith(secret).build().parseSignedClaims(token).getPayload();
     }
 
-
     private boolean isTokenExpired(String token) {
-        return getExpiredDateFromToken(token).before(new Date());
+        return getPayloadFromToken(token).getExpiration().before(new Date());
     }
 
-
-    private Date getExpiredDateFromToken(String token) {
-        return getPayloadFromToken(token).getExpiration();
-    }
-
-
-    public boolean canRefresh(String token) {
-        return !isTokenExpired(token);
-    }
-
-
-    public UserLoginResp refreshToken() {
-
-    }
 
 }
