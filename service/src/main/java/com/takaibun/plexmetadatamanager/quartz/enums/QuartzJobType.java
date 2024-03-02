@@ -1,8 +1,10 @@
 package com.takaibun.plexmetadatamanager.quartz.enums;
 
-import com.takaibun.plexmetadatamanager.enums.TaskType;
-import com.takaibun.plexmetadatamanager.quartz.job.ServerHealthCheckJob;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+
+import com.takaibun.plexmetadatamanager.enums.TaskType;
+import com.takaibun.plexmetadatamanager.quartz.exception.QuartzSchedulerException;
+import com.takaibun.plexmetadatamanager.quartz.job.ServerHealthCheckJob;
 
 /**
  * QuartzJob类型枚举
@@ -15,8 +17,7 @@ public enum QuartzJobType {
     /**
      * 媒体服务器健康检查
      */
-    SERVER_HEALTH_CHECK("ServerHealthCheckJob", ServerHealthCheckJob.class),
-    ;
+    SERVER_HEALTH_CHECK("ServerHealthCheckJob", ServerHealthCheckJob.class),;
 
     private final String jobName;
     private final Class<? extends QuartzJobBean> jobClass;
@@ -35,7 +36,7 @@ public enum QuartzJobType {
                 return quartzJobType;
             }
         }
-        return null;
+        throw new QuartzSchedulerException("task type is not support: " + taskType.getName());
     }
 
     public String getJobName() {

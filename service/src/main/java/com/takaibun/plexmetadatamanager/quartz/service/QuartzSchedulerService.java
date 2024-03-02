@@ -147,9 +147,6 @@ public class QuartzSchedulerService implements SchedulerService {
     private JobDetail buildJobDetail(TaskDetailVo taskDetail) {
         JobKey jobKey = getJobKey(taskDetail);
         Class<? extends QuartzJobBean> jobClass = QuartzJobType.getJobType(taskDetail.getTaskType()).getJobClass();
-        if (null == jobClass) {
-            throw new QuartzSchedulerException("task type is not support");
-        }
         JobDetail jobDetail = JobBuilder.newJob().ofType(jobClass).withIdentity(jobKey)
             .withDescription(taskDetail.getDescription()).storeDurably().build();
         jobDetail.getJobDataMap().putAll(taskDetail.getTaskParams());
